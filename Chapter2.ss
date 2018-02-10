@@ -263,7 +263,6 @@
   (cond ((null? t) t)
 	((not (list? t)) (list t))
 	(else (append (fringe (car t)) (fringe (cdr t))))))
-(cdr (list (list 1 2) (list 3 4)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 2.29
@@ -334,7 +333,7 @@ a-mobile ;; => ((12 34) (13 ((14 15) (16 17))))
 (define (sq-tr t) (tree-map square t))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
-;; 2.32
+;kjijhjhvgfescyntchyxxxxx         ;; 2.32
 ;; the rest is all the subsets that exclude the first element
 ;; so we need all the subsets that include the first element
 (define (subsets s)
@@ -345,3 +344,123 @@ a-mobile ;; => ((12 34) (13 ((14 15) (16 17))))
 				  rest))))))
 ;; Now I understand why Haskell uses guard.
 ;; functional programming is totally different from imperative programming
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;; 2.33
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+	  (accumulate op initial (cdr sequence)))))
+  
+(define (mmap p sequence)
+  (accumulate (lambda (x y)
+		(cons (p x) y))
+	      '()
+	      sequence))
+(define (append seq1 seq2)
+  (accumulate cons
+	      seq2
+	      seq1))
+
+(define (length sequence)
+  (accumulate (lambda (x y)
+		(+ 1 y))
+	      0
+	      sequence))
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;; 2.34
+(define (horner-eval x coefficient-sequence)
+  (accumulate (lambda (this-coeff higher-terms)
+		(+ (* x higher-terms) this-coeff))
+	      0
+	      coefficient-sequence))
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;; 2.35
+(define (flatten t)
+  (cond ((null? t) '())
+	((not (pair? t)) (list t))
+	(else (append (flatten (car t))
+		      (flatten (cdr t))))))
+(define (count-leaves tree)
+  (accumulate (lambda (x y)
+		(+ 1 y))
+	      0
+	      (flatten tree)))
+;; actually I just compute the length of a flattened nest listed
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;; 2.36
+;; the (map car seqs) and (map cdr seqs) take
+;; out corresponding elements out of the sequences
+(define (accumulate-n op init seqs)
+  (if (null? (car seqs))
+      init
+      (cons (accumulate op init (map car seqs))
+	    (accumulate-n op init (map cdr seqs)))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;; 2.37
+(define test-matrix '((1 2 3)
+		      (4 5 6)
+		      (7 8 9)))
+(define (dot-product v w)
+  (accumulate + 0 (map * v w)))
+
+(define (matrix-*-vector m v)
+  (map (lambda (x)
+	 (dot-product x v))
+       m)) ;; => notice that map would return a vector
+
+(define (transpose mat)
+  (accumulate-n cons
+		'()
+		mat))
+
+;; use vectors directly
+(define (matrix-*-matrix m n)
+  (let ((cols (transpose n)))
+    (map (lambda (x)
+	   (matrix-*-vector cols x)) m)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;; 2.38
+(define (fold-right op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+	  (fold-right op initial (cdr sequence)))))
+(define (fold-left op initial sequence)
+  (define (iter result rest)
+    (if (null? rest)
+	result
+	(iter (op result (car rest))
+	      (cdr rest))))
+  (iter initial sequence))
+(fold-right / 1 '(1 2 3)) ;; => 3/2
+(fold-left / 1 '(1 2 3))  ;; => 1/6
+(fold-right list '() '(1 2 3)) ;; => (1 (2 (3 ())))
+(fold-left list '() '(1 2 3))  ;; => (((() 1) 2) 3)
+;; but if the operator is itself commutative
+;; not important, then result of fold-right
+;; and fold-left would be the same
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;; 2.39
+;; notice the difference between append and cons
+(define (right-reverse l)
+  (fold-right (lambda (x y)
+		(append y (list x))) '() l))
+(define (left-reverse l)
+  (fold-left (lambda (x y)
+	       (cons y x)) '() l))
+(right-reverse '(1 2 3 4 5))
+(left-reverse '(1 2 3 4 5))
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;; 2.40
+(define (flatmap proc seq)
+  (accumulate append nil (map proc seq)))
