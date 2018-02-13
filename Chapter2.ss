@@ -462,5 +462,114 @@ a-mobile ;; => ((12 34) (13 ((14 15) (16 17))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 2.40
-(define (flatmap proc seq)
-  (accumulate append nil (map proc seq)))
+;; to be continued
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;; 2.41
+;; to be continued
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;; 2.42
+;; to be continued
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;; 2.43
+;; to be continued
+
+(define (interval a b)
+  (cond ((= a b) (list a))
+	(else (append (list a) (inter (+ 1 a) b)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;; I skip exercises in 2.2.4 Example: A Picture Language
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;; 2.54
+(define (memq item x)
+  (cond ((null? x) #f)
+	((eq? item (car x)) x)
+	(else (memq item (cdr x)))))
+
+(define (equal? l1 l2)
+  (cond ((and (null? l1) (null? l2)) #t)
+	((or (null? l1) (null? l2)) #f)
+	(else (and (eq? (car l1) (car l2))
+		   (equal? (cdr l1) (cdr l2))))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;; 2.55
+(car ''abracadabra)
+(define a ''abracadabra)
+a ;; => 'abracadabra
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;; 2.3.2 Symbolic Differentiation
+(define (=number? exp num)
+  (and (number? exp)
+       (= exp num)))
+(define (variable? e)
+  (symbol? e))
+(define (same-variable? v1 v2)
+  (and (variable? v1)
+       (variable? v2)
+       (eq? v1 v2)))
+(define (sum? e)
+  (and (pair? e)
+       (eq? (car e) '+)))
+(define (addend e) (cadr e))
+(define (augend e) (caddr e))
+(define (make-sum a1 a2)
+  (cond ((=number? a1 0) a2)
+	((=number? a2 0) a1)
+	((and (number? a1) (number? a2)) (+ a1 a2))
+	(else (list '+ a1 a2))))
+(define (product? e)
+  (and (pair? e)
+       (eq? (car e) '*)))
+(define (multiplier e) (cadr e))
+(define (multiplicand e) (caddr e))
+(define (make-product m1 m2)
+  (cond ((or (=number? m1 0) (=number? m2 0)) 0)
+	((=number? m1 1) m2)
+	((=number? m2 1) m1)
+	((and (number? m1) (number? m2)) (* m1 m2))
+	(else (list '* m1 m2))))
+
+(define (deriv exp var)
+  (cond ((number? exp) 0)
+	((variable? exp)
+	 (if (same-variable? exp var) 1 0))
+	((sum? exp)
+	 (make-sum (deriv (addend exp) var)
+		   (deriv (augend exp) var)))
+	((product? exp)
+	 (make-sum
+	  (make-product (multiplier exp)
+			(deriv (multiplicand exp) var))
+	  (make-product (deriv (multiplier exp) var)
+			(multiplicand exp))))
+	((exponentiation? exp)
+	 (make-product (make-product (exponent exp)
+				     (deriv (base exp) var))
+		       (make-exponentiation (base exp)
+					    (- (exponent exp) 1))))
+	(else
+	 (error "unknown expression type -- DERIV" exp))))
+;;;;;;;;;;;;;;;;;;;;;;;;
+;; 2.56
+(define (exponentiation? e)
+  (and (pair? e)
+       (eq? (car e) '**)))
+(define (base e)
+  (cadr e))
+(define (exponent e)
+  (caddr e))
+(define (make-exponentiation b e)
+  (cond ((=number? e 0) 1)
+	((=number? e 1) b)
+	((=number? b 1) 1)
+	(else (list '** b e))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;; 2.57
+(define (augend s))
