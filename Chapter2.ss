@@ -571,5 +571,4 @@ a ;; => 'abracadabra
 	(else (list '** b e))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;
-;; 2.57
-(define (augend s))
+;; Maybe I will go back to this chapter next semester.
